@@ -1,0 +1,7 @@
+# Facial Expression Recognition at the Edge
+1. Facial Expression Recognition (FER)
+2. Sentiment Analysis - BERT
+3. Data fusion of FER and sentiment analysis networks
+
+## Sentiment Analysis
+The sentiment analysis is done with a BERT model. The [training script](train/bertforsentimentanalysis.ipynb) uses a pretrained BERT model and a custom classification head. The model is fine-tuned on sentiment analysis datasets.
