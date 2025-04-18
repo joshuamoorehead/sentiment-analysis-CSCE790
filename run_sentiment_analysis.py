@@ -54,5 +54,5 @@ class SentimentAnalysis:
 
 if __name__ == "__main__":
     sentimentanalysis = SentimentAnalysis(True)
-    model = sentimentanalysis.load_model('./models/model.pt')
+    model = sentimentanalysis.load_model('./weights/model.pt')
     sentimentanalysis.inference(model, "no, im so disappointed")
