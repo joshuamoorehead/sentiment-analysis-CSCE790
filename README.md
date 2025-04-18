@@ -1,19 +1,70 @@
 # Facial Expression Recognition at the Edge
-1. Facial Expression Recognition (FER)
-2. Sentiment Analysis - BERT
-3. Data fusion of FER and sentiment analysis networks
 
-## Sentiment Analysis
-The sentiment analysis is done with a BERT model. The [training script](train/bertforsentimentanalysis.ipynb) uses a pretrained BERT model and a custom classification head. The model is fine-tuned on sentiment analysis datasets.
+1. Facial Expression Recognition (FER) - PAtt-Lite Model
+2. Sentiment Analysis - BERT
+3. Data Fusion of FER and Sentiment Analysis Networks
+
+---
+
+## 1. Facial Expression Recognition (FER)
+
+We use a lightweight PAtt-Lite convolutional neural network trained on the FER2013 dataset for expression recognition. The model is designed for edge inference on devices like the Raspberry Pi 5.
+
+- Training script: `train/train_patt_lite.py`
+- Model architecture: `models/patt_lite.py`
+- Inference script: `models/infer_patt_lite.py`
+
+### Model Weights
+
+To run inference, download the pretrained weights:
+
+```
+models/patt_lite.weights.h5
+```
+
+Download the weights from the following link (placeholder for now):
+
+[Download PAtt-Lite weights](https://drive.google.com/uc?id=YOUR_FILE_ID)
+
+Or run the included helper script:
+
+```bash
+pip install gdown
+python scripts/download_weights.py
+```
+
+---
+
+## 2. Sentiment Analysis (BERT)
+
+The sentiment analysis is done using a fine-tuned BERT model with a custom classification head.
+
+- Training notebook: `train/bertforsentimentanalysis.ipynb`
+
+We fine-tuned BERT on sentiment analysis datasets including Archeage, Ntua, and HCR.
+
+---
+
+## 3. Multimodal Fusion
+
+The FER and sentiment models are combined in `train/fusion/multimodalfusion.py` to create a joint expression/sentiment decision model. Future iterations aim to improve fusion latency and decision thresholds for real-time applications.
+
+---
 
 ## Install
-Developed for the RaspberryPi 5 - `Linux raspberrypi 6.12.20+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.12.20-1+rpt1~bpo12+1 (2025-03-19) aarch64 GNU/Linux`
+
+Developed for Raspberry Pi 5:
+
+```bash
+sudo apt install portaudio19-dev
+sudo apt install flac
 ```
-$ sudo apt install portaudio19-dev
-$ sudo apt install flac
-```
-[src](https://raspberrypi.stackexchange.com/questions/84666/problem-on-installing-pyaudio-on-raspberry-pi)
+
+[Install source](https://raspberrypi.stackexchange.com/questions/84666/problem-on-installing-pyaudio-on-raspberry-pi)
+
+---
 
 ## Sources
-* https://github.com/kpolley/Python_AVrecorder/blob/master/picam.py
 
+* https://github.com/kpolley/Python_AVrecorder/blob/master/picam.py
+* https://github.com/JLREX/PAtt-Lite
