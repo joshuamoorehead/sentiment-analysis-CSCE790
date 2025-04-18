@@ -14,26 +14,7 @@ We use a lightweight PAtt-Lite convolutional neural network trained on the FER20
 - Model architecture: `models/patt_lite.py`
 - Inference script: `models/infer_patt_lite.py`
 
-### Model Weights
 
-To run inference, download the pretrained weights:
-
-```
-models/patt_lite.weights.h5
-```
-
-Download the weights from the following link (placeholder for now):
-
-[Download PAtt-Lite weights](https://drive.google.com/uc?id=YOUR_FILE_ID)
-
-Or run the included helper script:
-
-```bash
-pip install gdown
-python scripts/download_weights.py
-```
-
----
 
 ## 2. Sentiment Analysis (BERT)
 
