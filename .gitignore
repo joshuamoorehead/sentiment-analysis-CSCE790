@@ -1,0 +1,3 @@
+data/
+kaggle.json
+*.weights.h5
