@@ -6,12 +6,12 @@ from transformers.models.bert.configuration_bert import BertConfig
 class SentimentAnalysis:
     def __init__(self, debug=False):
         self.config = BertConfig()
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.DEBUG = debug
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def load_model(self, model_path):
-        model = BERTForSentimentAnalysis(self.config).from_pretrained('bert-base-cased')
+        model = BERTForSentimentAnalysis(self.config).from_pretrained('bert-base-uncased')
         #if self.device == 'cuda':
         #    model.load_state_dict(torch.load(model_path, weights_only=True))
         #elif self.device == 'cpu':
@@ -54,5 +54,23 @@ class SentimentAnalysis:
 
 if __name__ == "__main__":
     sentimentanalysis = SentimentAnalysis(True)
-    model = sentimentanalysis.load_model('./weights/model.pt')
-    sentimentanalysis.inference(model, "no, im so disappointed")
+    model = sentimentanalysis.load_model('./weights/best_model.pt')
+
+    # DEMO
+    text = "the weather is beautiful today"
+    sentimentanalysis.inference(model, text)
+
+    text = "i'm so disappointed"
+    sentimentanalysis.inference(model, text)
+
+    text = "i love you"
+    sentimentanalysis.inference(model, text)
+
+    text = "this is the worst"
+    sentimentanalysis.inference(model, text)
+
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+
+    text = "it's raining cats and dogs"
+    sentimentanalysis.inference(model, text)

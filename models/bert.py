@@ -11,10 +11,10 @@ class BERTForSentimentAnalysis(BertModel):
         self.config = config
 
         self.bert = BertModel(config)
-        self.dropout = torch.nn.Dropout(0.1)
+        self.dropout = torch.nn.Dropout(0.3)
         self.classifier = torch.nn.Linear(config.hidden_size, self.num_labels)
 
-        self.post_init()
+        #self.post_init()
 
     def forward(self, input_ids=None, attention_mask=None, token_type_ids=None,):        
         outputs = self.bert(
