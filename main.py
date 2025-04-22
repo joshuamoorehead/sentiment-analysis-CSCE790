@@ -5,7 +5,7 @@ from mic_driver import SpeechToText
 from cam_driver import CaptureVideo
 from run_sentiment_analysis import SentimentAnalysis
 #from multimodalfusion import late_fusion_model, preprocessing
-from infer_patt_lite import predict_emotion_from_path
+#from infer_patt_lite import predict_emotion_from_path
 
 # init
 save_dir = './tmp'
@@ -29,21 +29,13 @@ filename = str(time.time())
 #t1.start(filename + ".png")
 t2.start(filename + ".txt")
 
-# TODO fer
-#output = FER(video)
-
-# inference on output
-with open(save_dir + '/' + filename + '.txt', 'r') as f:
-    text = f.read()
-sentiment_prediction = sentimentanalysis.inference(bert, text)
-
 # Wait for both threads to complete
-t1.thread.join()
-t2.thread.join()
+#t1.join()
+#t2.join()
+#print("Capture Completed.")
 
-print("Capture Completed.")
-
-
+# TODO fer
+"""
 # Facial Expression
 img_filename = "0_" + filename + ".png"
 image_path = os.path.join(save_dir + "/vid/", img_filename)
@@ -57,12 +49,17 @@ if os.path.exists(image_path):
     print(f"Confidence: {fer_result['confidence']:.2f}")
 else:
     print("Could not analyze facial expression: image file not found.")
-
+"""
 # sentiment analysis
 # load model
 sentimentanalysis = SentimentAnalysis(True)
 bert = sentimentanalysis.load_model('./weights/best_model.pt')
 
+# inference on output
+with open(save_dir + '/' + filename + '.txt', 'r') as f:
+    text = f.read()
+sentiment_prediction = sentimentanalysis.inference(bert, text)
+
 # TODO: run multimodal expresion recognition
-final = late_fusion_model(output, sentiment_prediction)
-print('final prediction:', final)
+#final = late_fusion_model(output, sentiment_prediction)
+#print('final prediction:', final)
