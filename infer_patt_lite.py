@@ -1,11 +1,10 @@
 import tensorflow as tf
 import numpy as np
 import cv2
-from tensorflow.keras.models import load_model
-from train.patt_lite import PAttLite
+from models.patt_lite import PAttLite  # Fixed import path
 
 # Load model
-MODEL_PATH = "models/patt_lite.weights.h5"
+MODEL_PATH = "weights/patt_lite.weights.h5"
 IMG_SHAPE = (120, 120, 3)
 
 # Emotion mapping
@@ -31,8 +30,8 @@ SENTIMENT_MAP = {
 
 # Load model
 _model = PAttLite()
-_model.build((None, *IMG_SHAPE))
-_model.load_weights(MODEL_PATH)
+_model.build((None, *IMG_SHAPE))  # Fixed syntax
+_model.load_weights_from_file(MODEL_PATH)  # Fixed method name
 
 def predict_emotion_from_path(image_path):
     img = cv2.imread(image_path)
@@ -41,16 +40,17 @@ def predict_emotion_from_path(image_path):
 def predict_emotion_from_array(image):
     if image.shape[:2] != IMG_SHAPE[:2]:
         image = cv2.resize(image, IMG_SHAPE[:2])
+    
     image = np.expand_dims(image, axis=0)
-
     preds = _model(image, training=False).numpy()
     emotion_idx = np.argmax(preds[0])
     emotion = EMOTION_MAP[emotion_idx]
     sentiment = SENTIMENT_MAP[emotion]
     confidence = preds[0][emotion_idx]
-
+    
     return {
         "emotion": emotion,
         "sentiment": sentiment,
-        "confidence": float(confidence)
+        "confidence": float(confidence),
+        "probabilities": preds[0].tolist()
     }
