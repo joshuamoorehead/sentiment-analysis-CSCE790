@@ -5,19 +5,6 @@ import torch
 import torch.nn as nn
 import sys
 import pandas as pd
-from transformers import BertTokenizer
-# from models.bert import BERTModel
-# from models.fer import FERModel
-
-''' Load models in ? They are from different files '''
-# get info from file
-pathToFER = '../facialexpressionrecognition.ipynb' # assumed for now
-pathToBERT = '../bertforsentimentanalysis.ipynb'
-
-# load in BERT     # returns categorization -- [1, 0]
-# load in FER model
-    # def load_fer_model(): return FERModel()
-    # returns probability, thresholded to 0 or 1
 
 fer_classes = ['happiness', 'sadness', 'anger', 'disgust', 'surprise', 'fear', 'neutral']
 bert_classes = ['positive', 'negative'] # 1 or 0

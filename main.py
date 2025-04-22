@@ -3,6 +3,8 @@ import time
 import threading
 from mic_driver import SpeechToText
 from cam_driver import CaptureVideo
+from run_sentiment_analysis import SentimentAnalysis
+#from multimodalfusion import late_fusion_model, preprocessing
 
 # init
 save_dir = './tmp'
@@ -23,7 +25,22 @@ print('readying recording devices..')
 time.sleep(2)
 
 filename = str(time.time())
-t1.start(filename + ".png")
+#t1.start(filename + ".png")
 t2.start(filename + ".txt")
 
+# TODO fer
+#output = FER(video)
+
+# sentiment analysis
+# load model
+sentimentanalysis = SentimentAnalysis(True)
+bert = sentimentanalysis.load_model('./weights/model.pt')
+
+# inference on output
+with open(save_dir + '/' + filename + '.txt', 'r') as f:
+    text = f.read()
+sentiment_prediction = sentimentanalysis.inference(bert, text)
+
 # TODO: run multimodal expresion recognition
+final = late_fusion_model(output, sentiment_prediction)
+print('final prediction:', final)
