@@ -1,20 +1,20 @@
-# imports
+# multimodalfusion.py
 import math
 import numpy as np
 import torch
 import torch.nn as nn
 import sys
-import pandas as pd
 
-fer_classes = ['happiness', 'sadness', 'anger', 'disgust', 'surprise', 'fear', 'neutral']
-bert_classes = ['positive', 'negative'] # 1 or 0
+# Emotion mappings
+fer_classes = ['anger', 'disgust', 'fear', 'happiness', 'neutral', 'sadness', 'surprise']
+bert_classes = ['negative', 'positive']  # 0 or 1
 
-'''  
-providing 'soft' probabilities for BERT-sentiment-FER outputs
-BERT outputs {0, 1} (2 classes) | FER outputs {happiness ... sadness} (7 classes)
+'''
+Providing 'soft' probabilities for BERT-sentiment-FER outputs
+BERT outputs {0, 1} (2 classes) | FER outputs {anger ... surprise} (7 classes)
 '''
 tone_to_face = {
-    1: {
+    1: {  # positive BERT sentiment
         'happiness': 1.0,
         'surprise': 0.8,
         'neutral': 0.6,
@@ -23,7 +23,7 @@ tone_to_face = {
         'disgust': 0.1,
         'fear': 0.2
     },
-    0: {
+    0: {  # negative BERT sentiment
         'happiness': 0.2,
         'surprise': 0.4,
         'neutral': 0.5,
@@ -33,53 +33,82 @@ tone_to_face = {
         'fear': 0.6
     }
 }
-''' Desired output of system: -1 is negative; 1 is positive, 0 is neutral'''
 
-''' Get FER and BERT output classification '''
-def preprocessing(bert, fer):
-    BERT_out = bert.get_probabilities() # get_probabilities is in external file
-    FER_out = fer.get_probabilities()
-    return BERT_out, FER_out
-
-''' DECISION LEVEL MULTIMODAL DATA FUSION SCRIPT '''
 # Late fusion model script
 class late_fusion_model(nn.Module):
-    def __init__(self): 
+    def __init__(self):
         super(late_fusion_model, self).__init__()
-        
-        ''' FER was mapped to 3 classes, so its (2 + 3) = (5) input dimensions'''
-        self.fc = nn.Linear(9, 3) # nn.Linear(input dimensions, output dimensions desired)
-        self.softmax = nn.Softmax(dim=1) # probability distribution
-
+        # FER has 7 classes, BERT has 2 classes, so we have 9 input dimensions
+        self.fc = nn.Linear(9, 3)  # Output: negative, positive, neutral/conflicting
+        self.softmax = nn.Softmax(dim=1)  # Convert to probability distribution
+    
     def forward(self, bert_pred, fer_pred):
-        ''' 
-        BERT: tensor [1, 2]
-        FER: tensor [1, 7]
         '''
-
-        sentiment_class = int(torch.argmax(bert_pred, dim=1).item()) # max class after softmax layer
-        class_from_map = tone_to_face[sentiment_class] # enter dominant tone thing
-
-        # applying weights of BERT mapping to FER
-        fer = []
+        BERT: tensor [1, 2] - probabilities for [negative, positive]
+        FER: tensor [1, 7] - probabilities for 7 emotions
+        '''
+        # Get the dominant sentiment class from BERT (0=negative, 1=positive)
+        sentiment_class = int(torch.argmax(bert_pred, dim=1).item())
+        
+        # Get the weighting map for the detected sentiment
+        class_from_map = tone_to_face[sentiment_class]
+        
+        # Apply weights to FER predictions based on BERT sentiment
+        weighted_fer = []
         for i, cls in enumerate(fer_classes):
-            fer.append(fer_pred[0, i].item() * class_from_map[cls])
-        fer = torch.tensor([fer], dtype=fer_pred.dtype, device=fer_pred.device) 
-
-        input = torch.cat([bert_pred, fer], dim=1) # [1,5] final classification layer
-
-        ''' Pre-Processing + One-Hot Encoding '''
-        ''' Tensor will have shape 3, with probabilities per classification '''
-        sentiment = self.fc(input)
+            weighted_fer.append(fer_pred[0, i].item() * class_from_map[cls])
+        
+        # Convert to tensor
+        weighted_fer = torch.tensor([weighted_fer], dtype=fer_pred.dtype, device=fer_pred.device)
+        
+        # Concatenate BERT and weighted FER for final classification
+        combined_input = torch.cat([bert_pred, weighted_fer], dim=1)  # [1, 9]
+        
+        # Final classification layer
+        sentiment = self.fc(combined_input)
         sentiment = self.softmax(sentiment)
-
+        
         return sentiment
 
-''' main(?) for inference 
-BERT_out, FER_out = preprocessing(BERT_get_out, FER_get_out) # At this point, we have the output classification. 
-
-# Convert to tensors for input into model (Expects 5 (2 from BERT, 3 from FER))
-bert_tensor = torch.tensor(BERT_out)
-FER_tensor = torch.tensor(FER_out)
-
-'''
+def predict_emotion(bert_output, fer_output):
+    """
+    Combine BERT and FER outputs to predict final emotion
+    
+    Args:
+        bert_output: Dict with sentiment (0/1) and probabilities
+        fer_output: Dict with emotion, sentiment, confidence, probabilities
+    
+    Returns:
+        dict: Prediction with emotion, confidence, etc.
+    """
+    # Create model
+    model = late_fusion_model()
+    
+    # Extract probabilities
+    bert_probs = bert_output.get("probabilities", [0.5, 0.5])
+    fer_probs = fer_output.get("probabilities", [0.0] * 7)
+    
+    # Convert to tensors
+    bert_tensor = torch.tensor([bert_probs])
+    fer_tensor = torch.tensor([fer_probs])
+    
+    # Get fusion prediction
+    with torch.no_grad():
+        fusion_output = model(bert_tensor, fer_tensor)
+        prediction = torch.argmax(fusion_output, dim=1).item()
+        confidence = fusion_output[0, prediction].item()
+    
+    # Map prediction to sentiment
+    sentiment_map = {
+        0: "negative",
+        1: "positive",
+        2: "neutral/conflicting"
+    }
+    
+    sentiment = sentiment_map[prediction]
+    
+    return {
+        "emotion": sentiment,
+        "confidence": confidence,
+        "probabilities": fusion_output[0].tolist()
+    }
