@@ -27,30 +27,20 @@ filename = str(time.time())
 t1.start(filename + ".png")
 t2.start(filename + ".txt")
 
-# Wait for capture to complete
-print("Capturing data...")
-time.sleep(25)  # Camera captures 10 frames with 2 seconds interval
+# Wait for both threads to complete
+t1.thread.join()
+t2.thread.join()
 
-# Get file paths - first frame from camera
+print("Capture Completed.")
+
+
+# Facial Expression
 img_filename = "0_" + filename + ".png"
-image_path = os.path.join(save_dir + "/vid/", img_filename)  # Camera adds /vid/ internally
+image_path = os.path.join(save_dir + "/vid/", img_filename)
 
-# Wait for file to exist
-max_wait = 10
-waited = 0
-while not os.path.exists(image_path):
-    time.sleep(0.5)
-    waited += 0.5
-    if waited >= max_wait:
-        print(f"Timeout waiting for image file: {image_path}")
-        break
-
-# Process the captured image (FER)
 if os.path.exists(image_path):
     print("Analyzing facial expression...")
     fer_result = predict_emotion_from_path(image_path)
-    
-    # Display FER result
     print("\n=== Facial Expression Analysis ===")
     print(f"Detected emotion: {fer_result['emotion']}")
     print(f"Sentiment: {fer_result['sentiment']} (-1=negative, 0=neutral, 1=positive)")
@@ -58,4 +48,5 @@ if os.path.exists(image_path):
 else:
     print("Could not analyze facial expression: image file not found.")
 
+# Sentiment Analysis
 # TODO: run multimodal expresion recognition
