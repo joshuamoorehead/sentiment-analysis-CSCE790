@@ -25,7 +25,7 @@ class CaptureVideo:
             ret, frame = cap.read()
             frames.append(frame)
             filenames.append(str(i) + '_' + self.filename)
-            time.sleep(2)
+            time.sleep(1)
         #cv2.imshow('cam', frame)
         self.save_dir = self.save_dir + self.inner_save_dir
         if not os.path.isdir(self.save_dir):
@@ -43,8 +43,8 @@ class CaptureVideo:
 
     def start(self, filename):
         self.filename=filename
-        t = threading.Thread(target=self.record_video)
-        t.start()
+        self.thread = threading.Thread(target=self.record_video)
+        self.thread.start()
         #self.record_video()
 
 
