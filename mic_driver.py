@@ -1,23 +1,32 @@
-# https://thepythoncode.com/article/using-speech-recognition-to-convert-speech-to-text-python
-# https://stackoverflow.com/questions/57268372/how-to-convert-live-real-time-audio-from-mic-to-text
 import os
 import pyaudio
 import threading
 import speech_recognition as sr
+import sys
+import ctypes
 
+# Suppress ALSA warnings
+def suppress_alsa_errors():
+    try:
+        asound = ctypes.cdll.LoadLibrary('libasound.so')
+        asound.snd_lib_error_set_handler(None)
+    except:
+        pass
+
+suppress_alsa_errors()
 
 class SpeechToText:
 
     def __init__(self, save_dir='./test', DEBUG=False):
         self.DEBUG = DEBUG
         self.MIC_IDX = 1
-
         self.filename = 'test.txt'
         self.save_dir = save_dir
 
         print('...loading speech-to-text')
         self.r = sr.Recognizer()
         self.p = pyaudio.PyAudio()
+        self.r.energy_threshold = 100  # Lower for sensitivity
 
         if self.DEBUG:
             self.find_microphone()
@@ -28,40 +37,38 @@ class SpeechToText:
 
     def get_speech(self):
         with sr.Microphone(self.MIC_IDX) as source:
-            self.r.adjust_for_ambient_noise(source, 1)
             print('Please speak into the mic...')
-            audio = self.r.listen(source)
+            self.r.adjust_for_ambient_noise(source, duration=1)
+            audio = self.r.listen(source, timeout=None, phrase_time_limit=10)
             print('...converting speech-to-text')
-            
+
             try:
                 text = self.r.recognize_google(audio)
-                if self.DEBUG:
-                    print(text)
+                print(f"Speech understood: \"{text}\"")
                 return text
-            except sr.exceptions.UnknownValueError as e:
+            except sr.UnknownValueError:
                 print('Could not understand, try speaking more clearly')
                 return -1
-            return -1
+            except sr.RequestError as e:
+                print(f"Could not request results; {e}")
+                return -1
 
     def record_speech(self):
-        text = self.get_speech()
-        if text != -1:
-            file_path = self.save_dir + '/' + self.filename
-
-            if not os.path.isdir(self.save_dir):
-                os.mkdir(self.save_dir)
-
-            with open(file_path, "w") as f:
-                f.write(text)
+        text = -1
+        while text == -1:
+            text = self.get_speech()
+        file_path = os.path.join(self.save_dir, self.filename)
+        if not os.path.isdir(self.save_dir):
+            os.makedirs(self.save_dir)
+        with open(file_path, "w") as f:
+            f.write(text)
 
     def start(self, filename):
-        self.filename=filename
-        #self.record_speech()
-        t = threading.Thread(target=self.record_speech)
-        t.start()
-
+        self.filename = filename
+        self.thread = threading.Thread(target=self.record_speech)
+        self.thread.start()
 
 if __name__ == "__main__":
     speech_to_text = SpeechToText(DEBUG=True)
     text = speech_to_text.get_speech()
-    print(text)
+

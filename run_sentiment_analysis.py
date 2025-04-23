@@ -1,7 +1,11 @@
 import torch
+import os
+os.environ["TRANSFORMERS_NO_TF"] = "1"
 from transformers import BertTokenizer
 from models.bert import BERTForSentimentAnalysis
 from transformers.models.bert.configuration_bert import BertConfig
+import transformers
+transformers.logging.set_verbosity_error()
 
 class SentimentAnalysis:
     def __init__(self, debug=False):
@@ -28,7 +32,8 @@ class SentimentAnalysis:
         data = self.tokenizer.encode_plus(data, None,
                                                     add_special_tokens=True,
                                                     max_length=self.config.max_length,
-                                                    pad_to_max_length=True,
+                                                    padding='max_length',
+                                                    truncation=True,
                                                     return_token_type_ids=True)
         ids = torch.tensor(data['input_ids'], dtype=torch.long)
         ids = ids.to(self.device, dtype=torch.long).unsqueeze(0)
