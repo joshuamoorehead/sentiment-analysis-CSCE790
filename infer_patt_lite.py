@@ -34,10 +34,14 @@ _model.build((None, *IMG_SHAPE))  # Fixed syntax
 _model.load_weights_from_file(MODEL_PATH)  # Fixed method name
 
 def predict_emotion_from_path(image_path):
+    """Predict emotion from an image file path"""
     img = cv2.imread(image_path)
+    if img is None:
+        raise ValueError(f"Could not load image from {image_path}")
     return predict_emotion_from_array(img)
 
 def predict_emotion_from_array(image):
+    """Predict emotion from a numpy array image"""
     if image.shape[:2] != IMG_SHAPE[:2]:
         image = cv2.resize(image, IMG_SHAPE[:2])
     
@@ -54,3 +58,22 @@ def predict_emotion_from_array(image):
         "confidence": float(confidence),
         "probabilities": preds[0].tolist()
     }
+
+# Function to get raw probabilities for multimodal fusion
+def get_probabilities(image):
+    """Get raw emotion probabilities for multimodal fusion"""
+    if isinstance(image, str):
+        # If input is a file path
+        img = cv2.imread(image)
+        if img is None:
+            raise ValueError(f"Could not load image from {image}")
+    else:
+        # If input is already a numpy array
+        img = image
+    
+    if img.shape[:2] != IMG_SHAPE[:2]:
+        img = cv2.resize(img, IMG_SHAPE[:2])
+    
+    img = np.expand_dims(img, axis=0)
+    preds = _model(img, training=False)
+    return preds  # Return raw tensor for fusion model
