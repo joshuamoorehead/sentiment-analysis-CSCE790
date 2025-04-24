@@ -1,3 +1,4 @@
+import time
 import torch
 import os
 os.environ["TRANSFORMERS_NO_TF"] = "1"
@@ -60,6 +61,7 @@ class SentimentAnalysis:
 if __name__ == "__main__":
     sentimentanalysis = SentimentAnalysis(True)
     model = sentimentanalysis.load_model('./weights/best_model.pt')
+    running_time = 0.0
 
     # DEMO
     text = "the weather is beautiful today"
@@ -68,14 +70,62 @@ if __name__ == "__main__":
     text = "i'm so disappointed"
     sentimentanalysis.inference(model, text)
 
+    start = time.time()
     text = "i love you"
     sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
 
+    start = time.time()
     text = "this is the worst"
     sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
 
+    start = time.time()
     text = "great! this is just what i needed today"
     sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
+
+    start = time.time()
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
+
+    start = time.time()
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
+
+    start = time.time()
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
+
+    start = time.time()
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
+
+    start = time.time()
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
+    
+    start = time.time()
+    text = "great! this is just what i needed today"
+    sentimentanalysis.inference(model, text)
+    print(str(time.time()-start))
+    running_time += time.time() - start
 
     text = "it's raining cats and dogs"
     sentimentanalysis.inference(model, text)
+
+    # average speed of inference: 0.31257473097907174 s
+    print('average speed of inference:', str(running_time/9), 's')

@@ -25,8 +25,9 @@ class SpeechToText:
 
         print('...loading speech-to-text')
         self.r = sr.Recognizer()
+        self.r.pause_threshold = 1
         self.p = pyaudio.PyAudio()
-        self.r.energy_threshold = 100  # Lower for sensitivity
+        #self.r.energy_threshold = 100  # Lower for sensitivity
 
         if self.DEBUG:
             self.find_microphone()
@@ -39,7 +40,7 @@ class SpeechToText:
         with sr.Microphone(self.MIC_IDX) as source:
             print('Please speak into the mic...')
             self.r.adjust_for_ambient_noise(source, duration=1)
-            audio = self.r.listen(source, timeout=None, phrase_time_limit=10)
+            audio = self.r.listen(source, timeout=None, phrase_time_limit=None)
             print('...converting speech-to-text')
 
             try:
